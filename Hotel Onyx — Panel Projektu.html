@@ -1,1 +1,2376 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)file:///C:/Users/Piotr/Downloads/hotel-onyx_13.html -->
+<html lang="pl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Onyx — Panel Projektu</title>
+<link href="./Hotel Onyx — Panel Projektu_files/css2" rel="stylesheet">
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDTFoCR7drp-lwjgI6XKQxSu9hZBNjG9Q0",
+  authDomain: "onyx-hotel.firebaseapp.com",
+  projectId: "onyx-hotel",
+  storageBucket: "onyx-hotel.firebasestorage.app",
+  messagingSenderId: "693274418204",
+  appId: "1:693274418204:web:b85ae4efc1841b5f2c93d9",
+  measurementId: "G-R3HQQP8GXL"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const DOC_REF = doc(db, 'hotel', 'project');
+const PRESENCE_REF = doc(db, 'hotel', 'presence');
+
+window._db = db;
+window._storage = storage;
+window._storageRef = ref;
+window._uploadBytesResumable = uploadBytesResumable;
+window._getDownloadURL = getDownloadURL;
+window._deleteObject = deleteObject;
+window._docRef = DOC_REF;
+window._presRef = PRESENCE_REF;
+window._setDoc = setDoc;
+window._onSnapshot = onSnapshot;
+window._getDoc = getDoc;
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+:root{
+  --bg:#0f0e0c;--surface:#1a1916;--surface2:#222018;
+  --border:#2e2c27;--border2:#3a3830;
+  --gold:#c9a84c;--gold2:#e8c96a;--gold-dim:rgba(201,168,76,.15);
+  --text:#f0ede6;--text2:#a09b8e;--text3:#6b6760;
+  --green:#5a8a60;--green-bg:rgba(90,138,96,.12);
+  --red:#8a5a5a;--red-bg:rgba(138,90,90,.12);
+  --blue:#5a78a0;--blue-bg:rgba(90,120,160,.12);
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOADING */
+#loading{display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;}
+#loading .spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+#loading h1{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold);}
+#loading p{font-size:13px;color:var(--text3);}
+
+/* USER PICK */
+#userpick{display:none;align-items:center;justify-content:center;height:100vh;}
+.up-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:40px 48px;width:400px;display:flex;flex-direction:column;gap:24px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.up-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);}
+.up-btn{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;text-align:left;width:100%;}
+.up-btn:hover{background:rgba(255,255,255,.03);}
+.up-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#0f0e0c;flex-shrink:0;}
+.up-name{font-size:15px;font-weight:600;color:var(--text);}
+.up-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* APP */
+#app{display:none;}
+
+/* HEADER */
+header{padding:20px 34px 0;display:flex;align-items:flex-end;gap:18px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;background:var(--bg);}
+.logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);letter-spacing:.04em;padding-bottom:16px;flex-shrink:0;}
+.logo span{color:var(--text2);font-size:11px;font-family:'DM Sans',sans-serif;display:block;font-weight:300;letter-spacing:.1em;text-transform:uppercase;margin-top:1px;}
+nav{display:flex;gap:2px;margin-left:auto;}
+.nav-btn{background:none;border:none;padding:8px 18px 14px;cursor:pointer;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;position:relative;transition:color .2s;white-space:nowrap;border-bottom:2px solid transparent;}
+.nav-btn:hover{color:var(--text2);}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.nav-badge{display:inline-block;background:var(--gold-dim);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:20px;margin-left:5px;font-weight:600;}
+.nav-alert{display:inline-flex;align-items:center;gap:3px;background:rgba(200,60,60,.18);color:#e05555;font-size:10px;padding:2px 7px;border-radius:20px;margin-left:6px;font-weight:700;animation:pulse 1.5s infinite;}
+.user-chip{display:flex;align-items:center;gap:6px;padding-bottom:16px;cursor:pointer;padding:4px 8px 16px;border-radius:20px;}
+.user-chip:hover{background:rgba(255,255,255,.03);}
+.sync-dot{width:6px;height:6px;border-radius:50%;display:inline-block;transition:background .3s;}
+.sync-label{font-size:11px;}
+
+/* PRESENCE BAR */
+#presence-bar{display:flex;align-items:center;gap:12px;padding:6px 20px;background:#0d0c0a;border-bottom:1px solid #1e1c18;font-size:12px;flex-wrap:wrap;}
+.pr-label{font-size:10px;color:#3a3830;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.pr-user{display:flex;align-items:center;gap:5px;}
+.pr-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0f0e0c;flex-shrink:0;}
+.pr-online-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;}
+
+/* TASK BAR */
+#task-bar{background:#131210;border-bottom:1px solid var(--border);display:flex;align-items:stretch;min-height:38px;overflow-x:auto;position:sticky;top:69px;z-index:9;}
+.task-tab{display:flex;align-items:center;gap:7px;padding:0 13px;border-right:1px solid var(--border);cursor:pointer;min-width:130px;max-width:210px;background:transparent;transition:background .15s;user-select:none;color:var(--text3);font-size:12px;border-bottom:2px solid transparent;}
+.task-tab:hover{background:var(--surface);color:var(--text2);}
+.task-tab.active{background:var(--surface);color:var(--text);border-bottom-color:var(--gold);}
+.task-tab .tt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.task-tab.s-todo .tt-dot{background:var(--text3);}
+.task-tab.s-progress .tt-dot{background:var(--blue);}
+.task-tab.s-done .tt-dot{background:var(--green);}
+.task-tab.s-blocked .tt-dot{background:var(--red);}
+.task-tab .tt-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.task-tab .tt-close{width:15px;height:15px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text3);flex-shrink:0;}
+.task-tab .tt-close:hover{background:var(--red-bg);color:var(--red);}
+#task-bar-hint{display:flex;align-items:center;padding:0 14px;color:var(--text3);font-size:11px;font-style:italic;white-space:nowrap;}
+
+/* MAIN */
+main{padding:24px 34px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* STATS */
+.stats-row{display:flex;gap:12px;margin-bottom:22px;}
+.stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 16px;}
+.stat-num{font-family:'Playfair Display',serif;font-size:25px;color:var(--gold);}
+.stat-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:2px;}
+
+/* PHASE */
+.phase-section{margin-bottom:32px;}
+.phase-hdr{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+.phase-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;background:none;border:none;border-bottom:1px dashed transparent;color:var(--gold);outline:none;padding:2px 3px;min-width:50px;}
+.phase-name:focus{border-bottom-color:var(--gold);}
+.phase-sep{color:#3a3830;font-size:16px;}
+.phase-sub{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;background:none;border:none;border-bottom:1px dashed transparent;color:var(--text);outline:none;padding:2px 3px;flex:1;min-width:100px;}
+.phase-sub:focus{border-bottom-color:var(--gold);}
+.phase-del{background:none;border:none;color:#3a3830;cursor:pointer;padding:2px 5px;border-radius:4px;font-size:13px;}
+.phase-del:hover{color:var(--red);background:var(--red-bg);}
+.phase-bar-wrap{width:120px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.phase-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .5s;}
+.phase-pct{font-size:12px;color:var(--gold);font-weight:700;min-width:32px;text-align:right;flex-shrink:0;}
+
+/* TASK TABLE */
+.task-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
+.task-table thead tr{background:var(--surface2);border-bottom:1px solid var(--border2);}
+.task-table th{padding:9px 11px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);}
+.task-table td{padding:0;border-bottom:1px solid var(--border);vertical-align:middle;}
+.task-table tbody tr:last-child td{border-bottom:none;}
+.task-table tbody tr:hover{background:rgba(255,255,255,.02);}
+.task-check{width:16px;height:16px;border:1.5px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.task-check:hover{border-color:var(--gold);}
+.task-check.done{background:var(--gold);border-color:var(--gold);color:var(--bg);font-size:10px;font-weight:700;}
+.task-name-btn{background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;text-align:left;cursor:pointer;padding:2px 3px;border-radius:4px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .15s;}
+.task-name-btn:hover{color:var(--gold);}
+.status-pill{border:1px solid transparent;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:4px 8px;border-radius:20px;cursor:pointer;outline:none;margin:7px 10px;-webkit-appearance:none;appearance:none;}
+.s-todo{background:var(--surface2);color:var(--text3);border-color:var(--border2);}
+.s-progress{background:var(--blue-bg);color:var(--blue);border-color:rgba(90,120,160,.3);}
+.s-done{background:var(--green-bg);color:var(--green);border-color:rgba(90,138,96,.3);}
+.s-blocked{background:var(--red-bg);color:var(--red);border-color:rgba(138,90,90,.3);}
+.date-inp{background:none;border:1px solid transparent;font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;cursor:pointer;outline:none;width:112px;margin:5px 3px;}
+.owner-inp{background:none;border:1px solid transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 7px;border-radius:20px;outline:none;width:100%;margin:5px 3px;}
+.owner-inp:hover,.owner-inp:focus{border-color:var(--border2);background:var(--surface2);color:var(--text);}
+.open-btn{background:none;border:1px solid var(--border2);color:var(--text3);font-size:11px;padding:3px 9px;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;margin:0 7px;transition:all .15s;}
+.open-btn:hover,.open-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:3px 6px;border-radius:4px;font-size:13px;opacity:0;transition:all .15s;}
+tr:hover .del-btn{opacity:1;}
+.del-btn:hover{color:var(--red);background:var(--red-bg);}
+.add-row-btn{padding:8px 11px;display:flex;align-items:center;gap:7px;border-top:1px dashed var(--border);cursor:pointer;color:var(--text3);font-size:12px;background:transparent;width:100%;border-left:none;border-right:none;border-bottom:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.add-row-btn:hover{color:var(--gold);background:var(--gold-dim);}
+.add-phase-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;background:transparent;border:1px dashed var(--border2);border-radius:var(--radius);color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;margin-top:12px;}
+.add-phase-btn:hover{color:var(--gold);border-color:var(--gold);background:var(--gold-dim);}
+
+/* DETAIL OVERLAY */
+#detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:flex-end;justify-content:center;}
+#detail-overlay.open{display:flex;}
+#detail-box{background:var(--surface);border:1px solid var(--border2);border-bottom:none;border-radius:16px 16px 0 0;width:100%;max-width:980px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .2s ease;}
+.detail-top{display:flex;align-items:center;gap:11px;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface2);}
+.detail-title{font-family:'Playfair Display',serif;font-size:18px;background:none;border:none;border-bottom:1px dashed transparent;color:var(--text);outline:none;flex:1;padding:2px 3px;}
+.detail-title:focus{border-bottom-color:var(--gold);}
+.detail-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:21px;line-height:1;padding:4px 7px;border-radius:6px;}
+.detail-close:hover{background:var(--red-bg);color:var(--red);}
+.mode-bar{display:flex;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);padding-left:20px;}
+.mode-btn{background:none;border:none;border-bottom:2px solid transparent;padding:10px 18px;cursor:pointer;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:-1px;}
+.mode-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.mode-panel{display:none;flex:1;overflow:hidden;}
+.mode-panel.active{display:flex;flex-direction:column;}
+
+/* CRM */
+.crm-body{display:flex;flex:1;overflow:hidden;}
+.crm-left{flex:1;padding:20px;overflow-y:auto;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:16px;}
+.crm-right{width:300px;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.field-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:5px;}
+.field-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;outline:none;}
+.field-inp:focus{border-color:var(--gold);}
+.field-ta{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 11px;outline:none;resize:vertical;min-height:90px;line-height:1.5;}
+.field-ta:focus{border-color:var(--gold);}
+
+/* LINKS */
+.link-info{background:rgba(90,120,160,.1);border:1px solid rgba(90,120,160,.2);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text2);line-height:1.6;}
+.link-info strong{color:var(--blue);}
+.link-item{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;}
+.link-item:hover{border-color:var(--border2);}
+.link-icon{font-size:18px;flex-shrink:0;}
+.link-name{font-size:12px;font-weight:500;color:var(--gold);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
+.link-name:hover{text-decoration:underline;}
+.link-url{font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.link-open{background:none;border:none;color:var(--text3);cursor:pointer;padding:3px 6px;border-radius:4px;font-size:13px;text-decoration:none;}
+.link-open:hover{color:var(--gold);}
+.link-del{background:none;border:none;color:var(--text3);cursor:pointer;padding:3px 6px;border-radius:4px;font-size:13px;}
+.link-del:hover{color:var(--red);}
+.add-link-btn{background:var(--gold);color:#0f0e0c;border:none;border-radius:7px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;}
+.add-link-btn:disabled{background:var(--border2);color:var(--text3);cursor:default;}
+
+/* REPORTS */
+.report-alert{background:rgba(200,60,60,.12);border:1px solid rgba(200,60,60,.3);border-radius:10px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px;}
+.month-hdr{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif;text-align:left;transition:background .15s;margin-bottom:0;}
+.month-hdr.open{border-radius:10px 10px 0 0;}
+.month-title{font-family:'Playfair Display',serif;font-size:17px;flex:1;}
+.month-miss{background:rgba(200,60,60,.18);color:#e05555;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;animation:pulse 1.5s infinite;}
+.month-prog{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.month-prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .4s;}
+.weeks-container{border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;margin-bottom:12px;}
+.week-row{border-bottom:1px solid var(--border);}
+.week-row:last-child{border-bottom:none;}
+.week-hdr{width:100%;background:transparent;border:none;padding:12px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif;text-align:left;}
+.week-content{padding:0 0 20px 0;}
+.week-subtabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding-left:44px;}
+.week-subtab{background:none;border:none;border-bottom:2px solid transparent;padding:7px 14px;cursor:pointer;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;margin-bottom:-1px;white-space:nowrap;}
+.week-subtab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.week-subtab-body{padding:14px 20px 0 44px;}
+.report-ta{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;outline:none;resize:vertical;line-height:1.6;min-height:100px;}
+.report-ta:focus{border-color:var(--gold);}
+
+/* PLACEHOLDER */
+.placeholder{display:flex;align-items:center;justify-content:center;height:250px;flex-direction:column;gap:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--radius);}
+.placeholder h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--text2);}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading" style="display: none;">
+  <div class="spinner"></div>
+  <h1>Hotel Onyx</h1>
+  <p>Łączenie z bazą danych…</p>
+</div>
+
+<!-- PASSWORD -->
+<div id="passwordscreen" style="display:none;align-items:center;justify-content:center;height:100vh;background:#0f0e0c;font-family:&#39;DM Sans&#39;,sans-serif;">
+  <div style="background:#1a1916;border:1px solid #2e2c27;border-radius:16px;padding:40px 48px;width:380px;display:flex;flex-direction:column;gap:22px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <div>
+      <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:22px;color:#c9a84c;margin-bottom:6px;">Hotel Onyx</div>
+      <div style="font-size:13px;color:#6b6760;">Wprowadź hasło dostępu</div>
+    </div>
+    <div>
+      <input id="pwd-input" type="password" placeholder="Hasło…" onkeydown="if(event.key===&#39;Enter&#39;)checkPassword()" style="width:100%;background:#222018;border:1px solid #2e2c27;border-radius:8px;color:#f0ede6;font-family:&#39;DM Sans&#39;,sans-serif;font-size:15px;padding:10px 14px;outline:none;">
+      <div id="pwd-error" style="color:#e05555;font-size:12px;margin-top:6px;display:none;">Nieprawidłowe hasło. Spróbuj ponownie.</div>
+    </div>
+    <button onclick="checkPassword()" style="background:#c9a84c;color:#0f0e0c;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:&#39;DM Sans&#39;,sans-serif;">
+      Wejdź →
+    </button>
+  </div>
+</div>
+<div id="userpick" style="display: none;">
+  <div class="up-box">
+    <div class="up-title">Hotel Onyx</div>
+    <p style="font-size:13px;color:var(--text3)">Kto to jesteś?</p>
+    <div style="display:flex;gap:12px;">
+      <button class="up-btn" onclick="chooseUser(&#39;piotr&#39;)" style="flex:1">
+        <div class="up-avatar" style="background:#5a8a60">P</div>
+        <div><div class="up-name">Piotr</div><div class="up-sub">Zaloguj się</div></div>
+      </button>
+      <button class="up-btn" onclick="chooseUser(&#39;marcin&#39;)" style="flex:1">
+        <div class="up-avatar" style="background:#a05a8a">M</div>
+        <div><div class="up-name">Marcin</div><div class="up-sub">Zaloguj się</div></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display: block;">
+  <header>
+    <div class="logo">HOTEL ONYX <span>Panel Zarządzania Projektem</span></div>
+    <nav>
+      <button class="nav-btn active" data-tab="reports" onclick="switchTab(&#39;reports&#39;)">
+        Raporty <span id="alert-badge" class="nav-alert" style="display:none">⚠ 0</span>
+      </button>
+      <button class="nav-btn" data-tab="milestones" onclick="switchTab(&#39;milestones&#39;)">
+        Kamienie Milowe <span id="ms-badge" class="nav-badge">8</span>
+      </button>
+      <button class="nav-btn" data-tab="tab3" onclick="switchTab(&#39;tab3&#39;)">Zakładka 3</button>
+    </nav>
+    <div class="user-chip" onclick="logoutUser()" title="Zmień użytkownika">
+      <span class="sync-dot" id="sync-dot" style="background: rgb(90, 138, 96);"></span>
+      <span class="sync-label" id="sync-label" style="font-size:11px;color:var(--text3)">Zsynchronizowano</span>
+      <span id="user-avatar" style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: rgb(15, 14, 12); margin-left: 4px; background: rgb(90, 138, 96);">P</span>
+      <span id="user-name" style="font-size:12px;color:var(--text2)">Piotr</span>
+    </div>
+  </header>
+
+  <div id="presence-bar">
+    <span class="pr-label">Zespół:</span>
+    <div id="presence-users"><div class="pr-user" style="opacity: 1;">
+      <div class="pr-avatar" style="background:#5a8a60">P</div>
+      <span style="color:#5a8a60;">Piotr (Ty)</span>
+      <span class="pr-online-dot"></span>
+    </div><div class="pr-user" style="opacity: 0.5;">
+      <div class="pr-avatar" style="background:#a05a8a">M</div>
+      <span style="color:var(--text2);">Marcin</span>
+      <span style="font-size:10px;color:var(--text3)">przed chwilą</span>
+    </div></div>
+  </div>
+
+  <div id="task-bar">
+    <div id="task-tabs"></div>
+    <div id="task-bar-hint" class="" style="display:flex;align-items:center;padding:0 14px;color:var(--text3);font-size:11px;font-style:italic;">Kliknij „Otwórz" przy zadaniu</div>
+  </div>
+
+  <main>
+    <div class="tab-panel active" id="tab-reports"><div style="margin-bottom:12px;">
+      <button class="month-hdr open" id="mhdr-202603" onclick="toggleMonth(202603)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(90deg)" id="marr-202603">▶</span>
+        <span class="month-title">Kwiecień 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202603" style="display:block">
+        <div class="weeks-container"><div class="week-row" style="background:rgba(201,168,76,.04)">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_4_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:600;color:var(--text)">Tydzień 1 — 06.04–10.04.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 10.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--gold);white-space:nowrap">Bieżący</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_4_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 13.04–17.04.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 17.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_4_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 20.04–24.04.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 24.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_4_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 27.04–01.05.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 01.05</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202604" onclick="toggleMonth(202604)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202604">▶</span>
+        <span class="month-title">Maj 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202604" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_5_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 04.05–08.05.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 08.05</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_5_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 11.05–15.05.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 15.05</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_5_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 18.05–22.05.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 22.05</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_5_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 25.05–29.05.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 29.05</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202605" onclick="toggleMonth(202605)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202605">▶</span>
+        <span class="month-title">Czerwiec 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202605" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_6_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 01.06–05.06.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 05.06</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_6_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 08.06–12.06.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 12.06</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_6_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 15.06–19.06.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 19.06</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_6_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 22.06–26.06.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 26.06</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_6_5&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 5 — 29.06–03.07.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 03.07</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202606" onclick="toggleMonth(202606)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202606">▶</span>
+        <span class="month-title">Lipiec 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202606" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_7_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 06.07–10.07.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 10.07</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_7_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 13.07–17.07.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 17.07</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_7_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 20.07–24.07.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 24.07</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_7_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 27.07–31.07.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 31.07</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202607" onclick="toggleMonth(202607)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202607">▶</span>
+        <span class="month-title">Sierpień 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202607" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_8_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 03.08–07.08.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 07.08</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_8_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 10.08–14.08.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 14.08</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_8_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 17.08–21.08.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 21.08</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_8_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 24.08–28.08.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 28.08</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_8_5&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 5 — 31.08–04.09.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 04.09</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202608" onclick="toggleMonth(202608)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202608">▶</span>
+        <span class="month-title">Wrzesień 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202608" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_9_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 07.09–11.09.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 11.09</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_9_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 14.09–18.09.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 18.09</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_9_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 21.09–25.09.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 25.09</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_9_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 28.09–02.10.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 02.10</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202609" onclick="toggleMonth(202609)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202609">▶</span>
+        <span class="month-title">Październik 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202609" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_10_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 05.10–09.10.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 09.10</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_10_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 12.10–16.10.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 16.10</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_10_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 19.10–23.10.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 23.10</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_10_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 26.10–30.10.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 30.10</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202610" onclick="toggleMonth(202610)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202610">▶</span>
+        <span class="month-title">Listopad 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202610" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_11_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 02.11–06.11.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 06.11</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_11_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 09.11–13.11.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 13.11</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_11_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 16.11–20.11.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 20.11</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_11_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 23.11–27.11.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 27.11</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_11_5&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 5 — 30.11–04.12.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 04.12</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202611" onclick="toggleMonth(202611)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202611">▶</span>
+        <span class="month-title">Grudzień 2026</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202611" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_12_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 07.12–11.12.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 11.12</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_12_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 14.12–18.12.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 18.12</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_12_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 21.12–25.12.26</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 25.12</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2026_12_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 28.12–01.01.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 01.01</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202700" onclick="toggleMonth(202700)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202700">▶</span>
+        <span class="month-title">Styczeń 2027</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202700" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_1_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 04.01–08.01.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 08.01</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_1_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 11.01–15.01.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 15.01</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_1_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 18.01–22.01.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 22.01</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_1_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 25.01–29.01.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 29.01</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202701" onclick="toggleMonth(202701)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202701">▶</span>
+        <span class="month-title">Luty 2027</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202701" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_2_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 01.02–05.02.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 05.02</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_2_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 08.02–12.02.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 12.02</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_2_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 15.02–19.02.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 19.02</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_2_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 22.02–26.02.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 26.02</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202702" onclick="toggleMonth(202702)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202702">▶</span>
+        <span class="month-title">Marzec 2027</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202702" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_3_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 01.03–05.03.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 05.03</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_3_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 08.03–12.03.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 12.03</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_3_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 15.03–19.03.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 19.03</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_3_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 22.03–26.03.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 26.03</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_3_5&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 5 — 29.03–02.04.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 02.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div><div style="margin-bottom:12px;">
+      <button class="month-hdr " id="mhdr-202703" onclick="toggleMonth(202703)">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:rotate(0deg)" id="marr-202703">▶</span>
+        <span class="month-title">Kwiecień 2027</span>
+        
+        
+        <div class="month-prog"><div class="month-prog-fill" style="width:0%"></div></div>
+      </button>
+      <div id="mweeks-202703" style="display:none">
+        <div class="weeks-container"><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_4_1&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 1 — 05.04–09.04.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 09.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_4_2&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 2 — 12.04–16.04.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 16.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_4_3&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 3 — 19.04–23.04.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 23.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div><div class="week-row" style="background:transparent">
+        <button class="week-hdr" onclick="toggleWeek(&#39;w_2027_4_4&#39;)">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:rotate(0deg)">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:400;color:var(--text2)">Tydzień 4 — 26.04–30.04.27</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek 30.04</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap">Przyszły</span>
+          
+          
+        </button></div></div></div></div></div>
+    <div class="tab-panel" id="tab-milestones"><div class="stats-row">
+    
+    <div class="stat-card"><div class="stat-num">8</div><div class="stat-lbl">Wszystkich</div></div>
+    <div class="stat-card"><div class="stat-num">0</div><div class="stat-lbl">Ukończonych</div></div>
+    <div class="stat-card"><div class="stat-num">6</div><div class="stat-lbl">W toku</div></div>
+    <div class="stat-card"><div class="stat-num">0</div><div class="stat-lbl">Zablokowanych</div></div>
+  </div><div class="phase-section">
+      <div class="phase-hdr">
+        <input class="phase-name" value="Faza 1" onchange="updatePhase(&#39;phase1&#39;,&#39;name&#39;,this.value)" oninput="updatePhase(&#39;phase1&#39;,&#39;name&#39;,this.value)">
+        <span class="phase-sep">·</span>
+        <input class="phase-sub" value="Fundament organizacyjny" onchange="updatePhase(&#39;phase1&#39;,&#39;subtitle&#39;,this.value)" oninput="updatePhase(&#39;phase1&#39;,&#39;subtitle&#39;,this.value)">
+        <button class="phase-del" onclick="deletePhase(&#39;phase1&#39;)">×</button>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:0%"></div></div>
+        <span class="phase-pct">0%</span>
+      </div>
+      <table class="task-table">
+        <thead><tr>
+          <th style="width:26%">Zadanie</th><th style="width:13%">Status</th>
+          <th style="width:12%">Start</th><th style="width:13%">Koniec</th>
+          <th style="width:10%">Kto</th><th style="width:7%">Linki</th>
+          <th style="width:10%">Okno</th><th style="width:32px"></th>
+        </tr></thead>
+        <tbody><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t1&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t1&#39;)" style="">Biznes plan — najem</button>
+          
+        </div></td>
+        <td><select class="status-pill s-progress" onchange="updateTask(&#39;phase1&#39;,&#39;t1&#39;,{status:this.value})">
+          <option value="todo">Do zrobienia</option>
+          <option value="progress" selected="">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t1&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t1&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t1&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t1&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t1&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--text3);">—</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t1&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t1&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t2&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t2&#39;)" style="">Biznes plan — śniadania</button>
+          
+        </div></td>
+        <td><select class="status-pill s-progress" onchange="updateTask(&#39;phase1&#39;,&#39;t2&#39;,{status:this.value})">
+          <option value="todo">Do zrobienia</option>
+          <option value="progress" selected="">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t2&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t2&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t2&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t2&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t2&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--text3);">—</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t2&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t2&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t3&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t3&#39;)" style="">Biznes plan — konferencja</button>
+          
+        </div></td>
+        <td><select class="status-pill s-todo" onchange="updateTask(&#39;phase1&#39;,&#39;t3&#39;,{status:this.value})">
+          <option value="todo" selected="">Do zrobienia</option>
+          <option value="progress">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t3&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t3&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t3&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t3&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t3&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--text3);">—</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t3&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t3&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t4&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t4&#39;)" style="">Estymacje kosztowe</button>
+          
+        </div></td>
+        <td><select class="status-pill s-todo" onchange="updateTask(&#39;phase1&#39;,&#39;t4&#39;,{status:this.value})">
+          <option value="todo" selected="">Do zrobienia</option>
+          <option value="progress">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t4&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t4&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t4&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t4&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t4&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--text3);">—</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t4&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t4&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t5&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t5&#39;)" style="">Estymacje przychodowe</button>
+          
+        </div></td>
+        <td><select class="status-pill s-progress" onchange="updateTask(&#39;phase1&#39;,&#39;t5&#39;,{status:this.value})">
+          <option value="todo">Do zrobienia</option>
+          <option value="progress" selected="">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="01.04.0002" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t5&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t5&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:rgba(200,60,60,.08);border:1px solid rgba(200,60,60,.5);color:#e05555;font-weight:500;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t5&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t5&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t5&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--gold);">📎 1</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t5&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t5&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t6&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t6&#39;)" style="">Umowa</button>
+          
+        </div></td>
+        <td><select class="status-pill s-progress" onchange="updateTask(&#39;phase1&#39;,&#39;t6&#39;,{status:this.value})">
+          <option value="todo">Do zrobienia</option>
+          <option value="progress" selected="">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="09.04.2026" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t6&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t6&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:rgba(90,138,96,.1);border:1px solid rgba(90,138,96,.4);color:#5a8a60;font-weight:500;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t6&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t6&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t6&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--gold);">📎 1</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t6&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t6&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;t7&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;t7&#39;)" style="">Struktura zatrudnienia</button>
+          
+        </div></td>
+        <td><select class="status-pill s-progress" onchange="updateTask(&#39;phase1&#39;,&#39;t7&#39;,{status:this.value})">
+          <option value="todo">Do zrobienia</option>
+          <option value="progress" selected="">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t7&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t7&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t7&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;t7&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;t7&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--gold);">📎 1</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;t7&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;t7&#39;)">×</button></td>
+      </tr><tr style="background:transparent">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check " onclick="toggleDone(&#39;phase1&#39;,&#39;x17756637546195518&#39;)"></div>
+          <button class="task-name-btn " onclick="openTab(&#39;phase1&#39;,&#39;x17756637546195518&#39;)" style="">pralnie</button>
+          
+        </div></td>
+        <td><select class="status-pill s-progress" onchange="updateTask(&#39;phase1&#39;,&#39;x17756637546195518&#39;,{status:this.value})">
+          <option value="todo">Do zrobienia</option>
+          <option value="progress" selected="">W toku</option>
+          <option value="done">Gotowe</option>
+          <option value="blocked">Zablokowane</option>
+        </select></td>
+        <td><input type="text" value="10.04.2026" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;x17756637546195518&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;x17756637546195518&#39;,&#39;start&#39;,&#39;__VAL__&#39;)&#39;)" style="background:rgba(90,138,96,.1);border:1px solid rgba(90,138,96,.4);color:#5a8a60;font-weight:500;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;;font-variant-numeric:tabular-nums;"></td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          <input type="text" value="" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;x17756637546195518&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDate(this,&#39;updateTaskDate(&#39;phase1&#39;,&#39;x17756637546195518&#39;,&#39;end&#39;,&#39;__VAL__&#39;)&#39;)" style="background:none;border:1px solid transparent;color:#6b6760;font-weight:400;font-family:&#39;DM Sans&#39;,sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;;font-variant-numeric:tabular-nums;">
+          
+          
+        </div></td>
+        <td><input class="owner-inp" value="" placeholder="Kto?" onchange="updateTask(&#39;phase1&#39;,&#39;x17756637546195518&#39;,{owner:this.value})"></td>
+        <td><div style="padding:0 10px;font-size:12px;color:var(--gold);">📎 2</div></td>
+        <td><button class="open-btn " onclick="openTab(&#39;phase1&#39;,&#39;x17756637546195518&#39;)">Otwórz</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask(&#39;phase1&#39;,&#39;x17756637546195518&#39;)">×</button></td>
+      </tr></tbody></table>
+      <button class="add-row-btn" onclick="addTask(&#39;phase1&#39;)">+ Dodaj zadanie</button>
+    </div><button class="add-phase-btn" onclick="addPhase()">+ Dodaj fazę</button></div>
+    <div class="tab-panel" id="tab-tab3">
+      <div class="placeholder"><h2>Zakładka 3</h2><p>Wkrótce…</p></div>
+    </div>
+  </main>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div id="detail-overlay">
+  <div id="detail-box">
+    <div class="detail-top">
+      <select id="det-status" class="status-pill" onchange="detUpdateImmediate(&#39;status&#39;,this.value)">
+        <option value="todo">Do zrobienia</option>
+        <option value="progress">W toku</option>
+        <option value="done">Gotowe</option>
+        <option value="blocked">Zablokowane</option>
+      </select>
+      <input id="det-title" class="detail-title" placeholder="Nazwa zadania…" oninput="detUpdate(&#39;name&#39;,this.value)">
+      <button class="detail-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="mode-bar">
+      <button class="mode-btn active" onclick="switchMode(&#39;crm&#39;)">📋 CRM</button>
+      <button class="mode-btn" onclick="switchMode(&#39;xls&#39;)">📊 Arkusz</button>
+    </div>
+    <div class="mode-panel active" id="mode-crm">
+      <div class="crm-body">
+        <div class="crm-left">
+          <div><label class="field-label">Opis / Notatki</label>
+            <textarea id="det-note" class="field-ta" rows="5" placeholder="Szczegóły, ustalenia…" oninput="detUpdate(&#39;note&#39;,this.value)"></textarea>
+          </div>
+          <div style="display:flex;gap:11px;">
+            <div style="flex:1"><label class="field-label">Data rozpoczęcia</label>
+            <input type="text" id="det-start" class="field-inp" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDetDate(&#39;start&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDetDate(&#39;start&#39;)"></div>
+          <div style="flex:1"><label class="field-label">Data zakończenia</label>
+            <input type="text" id="det-end" class="field-inp" placeholder="DD.MM.RRRR" maxlength="10" oninput="formatDateInput(this)" onblur="commitDetDate(&#39;end&#39;)" onkeydown="if(event.key===&#39;Enter&#39;)commitDetDate(&#39;end&#39;)"></div>
+          </div>
+          <div><label class="field-label">Odpowiedzialny</label>
+            <input id="det-owner" class="field-inp" placeholder="Imię lub inicjały…" oninput="detUpdate(&#39;owner&#39;,this.value)"></div>
+        </div>
+        <div class="crm-right" id="crm-links-panel"></div>
+      </div>
+    </div>
+    <div class="mode-panel" id="mode-xls">
+      <div style="flex:1;padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;" id="xls-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const USERS = {
+  piotr:  {id:'piotr',  name:'Piotr',  color:'#5a8a60'},
+  marcin: {id:'marcin', name:'Marcin', color:'#a05a8a'},
+};
+const MONTH_PL = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+const PAD = n => String(n).padStart(2,'0');
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let DATA = null;
+let myUser = null;
+let openTabs = [];
+let activeTaskId = null;
+let detTaskId = null, detPhaseId = null, detMode = 'crm';
+let saveTimer = null;
+let detSaveTimer = null;
+let unsubscribe = null;
+let presenceInterval = null;
+let weekSubTabs = {};
+
+// ─── WEEKS ────────────────────────────────────────────────────────────────────
+function buildWeeks() {
+  const months = [];
+  let cur = new Date(2026,3,6), end = new Date(2027,4,1);
+  let curM = -1, wn = 1, mo = null;
+  while (cur < end) {
+    const mon = new Date(cur), fri = new Date(cur);
+    fri.setDate(cur.getDate()+4);
+    const mk = mon.getFullYear()*100+mon.getMonth();
+    if (mk!==curM) { if(mo) months.push(mo); curM=mk; wn=1; mo={key:mk,label:MONTH_PL[mon.getMonth()]+' '+mon.getFullYear(),weeks:[]}; }
+    const ms=PAD(mon.getDate())+'.'+PAD(mon.getMonth()+1);
+    const fs=PAD(fri.getDate())+'.'+PAD(fri.getMonth()+1);
+    mo.weeks.push({
+      id:`w_${mon.getFullYear()}_${mon.getMonth()+1}_${wn}`,
+      num:wn, label:`Tydzień ${wn} — ${ms}–${fs}.${String(fri.getFullYear()).slice(2)}`,
+      friFull:`${fri.getFullYear()}-${PAD(fri.getMonth()+1)}-${PAD(fri.getDate())}`,
+      monFull:`${mon.getFullYear()}-${PAD(mon.getMonth()+1)}-${PAD(mon.getDate())}`,
+    });
+    wn++; cur.setDate(cur.getDate()+7);
+  }
+  if(mo) months.push(mo);
+  return months;
+}
+const ALL_MONTHS = buildWeeks();
+
+// ─── DEFAULT DATA ─────────────────────────────────────────────────────────────
+function defaultData() {
+  return {
+    phases:[{id:'phase1',name:'Faza 1',subtitle:'Fundament organizacyjny',tasks:[
+      {id:'t1',name:'Biznes plan — najem',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+      {id:'t2',name:'Biznes plan — śniadania',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+      {id:'t3',name:'Biznes plan — konferencja',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+      {id:'t4',name:'Estymacje kosztowe',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+      {id:'t5',name:'Estymacje przychodowe',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+      {id:'t6',name:'Umowa',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+      {id:'t7',name:'Struktura zatrudnienia',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null},
+    ]}],
+    reports:{},
+    _v:1
+  };
+}
+
+function normalizeData(d) {
+  if (!d.reports) d.reports = {};
+  d.phases.forEach(p => p.tasks.forEach(t => {
+    if (!t.links) t.links = [];
+    if (!('xlsGrid' in t)) t.xlsGrid = null;
+  }));
+  return d;
+}
+
+function uid() { return 'x'+Date.now()+Math.floor(Math.random()*9999); }
+function fmt(n) { return isNaN(n)||n===null||n===''?'—':Math.round(n).toLocaleString('pl-PL')+' zł'; }
+
+// ─── FIREBASE ─────────────────────────────────────────────────────────────────
+function initFirebase() {
+  const ref = window._docRef;
+  // Real-time listener
+  unsubscribe = window._onSnapshot(ref, snap => {
+    const remote = snap.exists() ? snap.data().payload : null;
+    if (remote) {
+      const d = normalizeData(JSON.parse(remote));
+      if (!DATA || d._v > DATA._v) {
+        DATA = d;
+        renderAll();
+      }
+    } else {
+      DATA = defaultData();
+      saveToFirebase();
+      renderAll();
+    }
+    setSyncStatus(true);
+  }, err => {
+    console.error('Firestore error', err);
+    setSyncStatus(false);
+  });
+}
+
+async function saveToFirebase() {
+  if (!DATA) return;
+  try {
+    setSyncStatus(null); // saving
+    await window._setDoc(window._docRef, {payload: JSON.stringify(DATA)});
+    setSyncStatus(true);
+  } catch(e) {
+    console.error('Save failed', e);
+    setSyncStatus(false);
+  }
+}
+
+function save(newData) {
+  DATA = {...newData, _v:(newData._v||0)+1};
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToFirebase, 600);
+  renderAll();
+}
+
+function setSyncStatus(ok) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (ok === null) { dot.style.background='#c9a84c'; lbl.textContent='Zapisuję…'; lbl.style.color='#c9a84c'; }
+  else if (ok) { dot.style.background='#5a8a60'; lbl.textContent='Zsynchronizowano'; lbl.style.color='var(--text3)'; }
+  else { dot.style.background='#e05555'; lbl.textContent='Błąd połączenia'; lbl.style.color='#e05555'; }
+}
+
+// ─── PRESENCE ─────────────────────────────────────────────────────────────────
+async function pingPresence() {
+  if (!myUser || !window._presRef) return;
+  try {
+    const snap = await window._getDoc(window._presRef);
+    const all = snap.exists() ? (snap.data().users || {}) : {};
+    all[myUser.id] = {...myUser, ts: Date.now()};
+    await window._setDoc(window._presRef, {users: all});
+    renderPresence(all);
+  } catch(e) {}
+}
+
+function renderPresence(all) {
+  const now = Date.now();
+  const cont = document.getElementById('presence-users');
+  if (!cont) return;
+  cont.innerHTML = '';
+  Object.values(all).sort((a,b)=>b.ts-a.ts).forEach(u => {
+    const online = now - u.ts < 30000;
+    const div = document.createElement('div');
+    div.className = 'pr-user';
+    div.style.opacity = online ? '1' : '0.5';
+    div.innerHTML = `
+      <div class="pr-avatar" style="background:${u.color}">${u.name.charAt(0)}</div>
+      <span style="color:${u.id===myUser?.id?u.color:'var(--text2)'};">${u.name}${u.id===myUser?.id?' (Ty)':''}</span>
+      ${online?'<span class="pr-online-dot"></span>':'<span style="font-size:10px;color:var(--text3)">'+timeAgo(u.ts)+'</span>'}
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now()-ts)/1000);
+  if (s<60) return 'przed chwilą';
+  const m = Math.floor(s/60);
+  if (m<60) return m+' min temu';
+  return Math.floor(m/60)+' godz. temu';
+}
+
+function showPasswordScreen() {
+  document.getElementById('passwordscreen').style.display = 'flex';
+}
+function checkPassword() {
+  const val = document.getElementById('pwd-input').value;
+  if (val === 'onyx27') {
+    sessionStorage.setItem('hotel_authed', '1');
+    document.getElementById('passwordscreen').style.display = 'none';
+    const savedUser = localStorage.getItem('hotel_user_v2');
+    if (savedUser && USERS[savedUser]) chooseUser(savedUser);
+    else document.getElementById('userpick').style.display = 'flex';
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+// ─── USER ─────────────────────────────────────────────────────────────────────
+function chooseUser(id) {
+  myUser = USERS[id];
+  localStorage.setItem('hotel_user_v2', id);
+  document.getElementById('userpick').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const av = document.getElementById('user-avatar');
+  av.style.background = myUser.color;
+  av.textContent = myUser.name.charAt(0);
+  document.getElementById('user-name').textContent = myUser.name;
+  initFirebase();
+  pingPresence();
+  presenceInterval = setInterval(pingPresence, 10000);
+}
+
+function logoutUser() {
+  localStorage.removeItem('hotel_user_v2');
+  if (unsubscribe) unsubscribe();
+  clearInterval(presenceInterval);
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('userpick').style.display = 'flex';
+  myUser = null; DATA = null;
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='tab-'+id));
+}
+
+// ─── TASK BAR ─────────────────────────────────────────────────────────────────
+function renderTaskBar() {
+  const wrap = document.getElementById('task-tabs');
+  const hint = document.getElementById('task-bar-hint');
+  wrap.innerHTML = '';
+  hint.style.display = openTabs.length ? 'none' : 'flex';
+  openTabs.forEach(w => {
+    const task = getTask(w.phaseId, w.taskId);
+    if (!task) return;
+    const isAct = activeTaskId === task.id;
+    const tab = document.createElement('div');
+    tab.className = `task-tab s-${task.status}${isAct?' active':''}`;
+    tab.innerHTML = `<div class="tt-dot"></div><div class="tt-name">${esc(task.name||'Bez nazwy')}</div><div class="tt-close" data-tid="${task.id}">×</div>`;
+    tab.addEventListener('click', e => {
+      if (e.target.dataset.tid) { closeTab(e.target.dataset.tid); return; }
+      openDetail(w.phaseId, w.taskId);
+    });
+    wrap.appendChild(tab);
+  });
+}
+
+function openTab(phaseId, taskId) {
+  if (!openTabs.find(w=>w.taskId===taskId)) openTabs.push({phaseId,taskId});
+  activeTaskId = taskId;
+  renderTaskBar();
+  openDetail(phaseId, taskId);
+  renderMilestones();
+}
+
+function closeTab(taskId) {
+  openTabs = openTabs.filter(w=>w.taskId!==taskId);
+  if (activeTaskId===taskId) activeTaskId = openTabs.length?openTabs[openTabs.length-1].taskId:null;
+  renderTaskBar();
+  if (detTaskId===taskId) closeDetail();
+  renderMilestones();
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getTask(phaseId, taskId) {
+  const p = DATA?.phases.find(p=>p.id===phaseId);
+  return p ? p.tasks.find(t=>t.id===taskId) : null;
+}
+function updateTask(phaseId, taskId, patch) {
+  const newData = JSON.parse(JSON.stringify(DATA));
+  const p = newData.phases.find(p=>p.id===phaseId);
+  if (!p) return;
+  const ti = p.tasks.findIndex(t=>t.id===taskId);
+  if (ti<0) return;
+  p.tasks[ti] = {...p.tasks[ti], ...patch};
+  save(newData);
+}
+
+function isOverdue(dateStr, status) {
+  if (!dateStr || status==='done') return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return new Date(dateStr) < today;
+}
+function isDueSoon(dateStr, status) {
+  if (!dateStr || status==='done') return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dateStr);
+  const diff = (d-today)/(1000*60*60*24);
+  return diff>=0 && diff<=3;
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────────────────────────
+function renderAll() {
+  if (!DATA) return;
+  renderMilestones();
+  renderReports();
+  renderTaskBar();
+  updateBadges();
+}
+
+function updateBadges() {
+  const all = DATA.phases.flatMap(p=>p.tasks);
+  document.getElementById('ms-badge').textContent = all.length;
+  const missing = getMissingReports();
+  const badge = document.getElementById('alert-badge');
+  if (missing.length > 0) {
+    badge.style.display = 'inline-flex';
+    badge.textContent = `⚠ ${missing.length}`;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ─── MILESTONES ───────────────────────────────────────────────────────────────
+function renderMilestones() {
+  const cont = document.getElementById('tab-milestones');
+  const all = DATA.phases.flatMap(p=>p.tasks);
+  const stats = {
+    total: all.length,
+    done: all.filter(t=>t.status==='done').length,
+    progress: all.filter(t=>t.status==='progress').length,
+    blocked: all.filter(t=>t.status==='blocked').length,
+  };
+  let html = `<div class="stats-row">
+    ${[['Wszystkich',stats.total],['Ukończonych',stats.done],['W toku',stats.progress],['Zablokowanych',stats.blocked]].map(([l,n])=>`
+    <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-lbl">${l}</div></div>`).join('')}
+  </div>`;
+
+  DATA.phases.forEach(phase => {
+    const pct = phase.tasks.length ? Math.round(phase.tasks.filter(t=>t.status==='done').length/phase.tasks.length*100) : 0;
+    html += `<div class="phase-section">
+      <div class="phase-hdr">
+        <input class="phase-name" value="${esc(phase.name)}" onchange="updatePhase('${phase.id}','name',this.value)" oninput="updatePhase('${phase.id}','name',this.value)"/>
+        <span class="phase-sep">·</span>
+        <input class="phase-sub" value="${esc(phase.subtitle)}" onchange="updatePhase('${phase.id}','subtitle',this.value)" oninput="updatePhase('${phase.id}','subtitle',this.value)"/>
+        <button class="phase-del" onclick="deletePhase('${phase.id}')">×</button>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:${pct}%"></div></div>
+        <span class="phase-pct">${pct}%</span>
+      </div>
+      <table class="task-table">
+        <thead><tr>
+          <th style="width:26%">Zadanie</th><th style="width:13%">Status</th>
+          <th style="width:12%">Start</th><th style="width:13%">Koniec</th>
+          <th style="width:10%">Kto</th><th style="width:7%">Linki</th>
+          <th style="width:10%">Okno</th><th style="width:32px"></th>
+        </tr></thead>
+        <tbody>`;
+
+    phase.tasks.forEach(task => {
+      const isOpen = openTabs.find(w=>w.taskId===task.id);
+      const lCount=(task.files||[]).length+(task.links||[]).length;
+      const eo = isOverdue(task.end, task.status);
+      const es = isDueSoon(task.end, task.status);
+      const so = isOverdue(task.start, task.status) && !task.end;
+
+      const startColor = so ? '#e05555' : task.start ? '#5a8a60' : '#6b6760';
+      const startBg = so ? 'rgba(200,60,60,.08)' : task.start ? 'rgba(90,138,96,.1)' : 'none';
+      const startBorder = so ? 'rgba(200,60,60,.5)' : task.start ? 'rgba(90,138,96,.4)' : 'transparent';
+      const endColor = eo ? '#e05555' : es ? '#c9a84c' : task.end ? '#5a8a60' : '#6b6760';
+      const endBg = eo ? 'rgba(200,60,60,.08)' : es ? 'rgba(201,168,76,.08)' : task.end ? 'rgba(90,138,96,.1)' : 'none';
+      const endBorder = eo ? 'rgba(200,60,60,.5)' : es ? 'rgba(201,168,76,.4)' : task.end ? 'rgba(90,138,96,.4)' : 'transparent';
+
+      html += `<tr style="background:${eo?'rgba(200,60,60,.04)':'transparent'}">
+        <td><div style="padding:9px 11px;display:flex;align-items:center;gap:7px;">
+          <div class="task-check ${task.status==='done'?'done':''}" onclick="toggleDone('${phase.id}','${task.id}')">${task.status==='done'?'✓':''}</div>
+          <button class="task-name-btn ${task.status==='done'?'text-through':''}" onclick="openTab('${phase.id}','${task.id}')" style="${task.status==='done'?'text-decoration:line-through;color:var(--text3)':''}">${esc(task.name||'Kliknij aby nazwać…')}</button>
+          ${eo?'<span style="font-size:12px;animation:pulse 1.5s infinite">❗</span>':''}
+        </div></td>
+        <td><select class="status-pill s-${task.status}" onchange="updateTask('${phase.id}','${task.id}',{status:this.value})">
+          <option value="todo" ${task.status==='todo'?'selected':''}>Do zrobienia</option>
+          <option value="progress" ${task.status==='progress'?'selected':''}>W toku</option>
+          <option value="done" ${task.status==='done'?'selected':''}>Gotowe</option>
+          <option value="blocked" ${task.status==='blocked'?'selected':''}>Zablokowane</option>
+        </select></td>
+        <td>${makeDateInput(task.start, `updateTaskDate('${phase.id}','${task.id}','start','__VAL__')`, `background:${startBg};border:1px solid ${startBorder};color:${startColor};font-weight:${task.start?500:400};font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;margin:5px 3px;`)}</td>
+        <td><div style="display:inline-flex;align-items:center;gap:4px;margin:5px 3px;">
+          ${makeDateInput(task.end, `updateTaskDate('${phase.id}','${task.id}','end','__VAL__')`, `background:${endBg};border:1px solid ${endBorder};color:${endColor};font-weight:${task.end||eo||es?500:400};font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 7px;border-radius:6px;outline:none;width:108px;`)}
+          ${eo?`<span style="font-size:13px;animation:pulse 1.5s infinite">🔴</span>`:''}
+          ${es&&!eo?`<span style="font-size:13px">⚠️</span>`:''}
+        </div></td>
+        <td><input class="owner-inp" value="${esc(task.owner||'')}" placeholder="Kto?" onchange="updateTask('${phase.id}','${task.id}',{owner:this.value})"/></td>
+        <td><div style="padding:0 10px;font-size:12px;color:${lCount?'var(--gold)':'var(--text3)'};">${lCount?'📎 '+lCount:'—'}</div></td>
+        <td><button class="open-btn ${isOpen?'active':''}" onclick="openTab('${phase.id}','${task.id}')">${isOpen?'● Otwarte':'Otwórz'}</button></td>
+        <td style="padding:0 4px;text-align:center;"><button class="del-btn" onclick="deleteTask('${phase.id}','${task.id}')">×</button></td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>
+      <button class="add-row-btn" onclick="addTask('${phase.id}')">+ Dodaj zadanie</button>
+    </div>`;
+  });
+
+  html += `<button class="add-phase-btn" onclick="addPhase()">+ Dodaj fazę</button>`;
+  cont.innerHTML = html;
+}
+
+function updatePhase(phaseId, field, value) {
+  const nd = JSON.parse(JSON.stringify(DATA));
+  const p = nd.phases.find(p=>p.id===phaseId);
+  if (p) { p[field]=value; save(nd); }
+}
+function deletePhase(phaseId) {
+  if (DATA.phases.length<=1) { alert('Nie można usunąć ostatniej fazy.'); return; }
+  if (!confirm('Usunąć fazę?')) return;
+  save({...DATA, phases:DATA.phases.filter(p=>p.id!==phaseId)});
+}
+function addPhase() {
+  const n = DATA.phases.length+1;
+  save({...DATA, phases:[...DATA.phases,{id:'ph'+uid(),name:'Faza '+n,subtitle:'Nazwa fazy',tasks:[]}]});
+}
+function addTask(phaseId) {
+  const nt = {id:uid(),name:'',status:'todo',start:'',end:'',owner:'',note:'',links:[],xlsGrid:null};
+  const nd = JSON.parse(JSON.stringify(DATA));
+  const p = nd.phases.find(p=>p.id===phaseId);
+  if (!p) return;
+  p.tasks.push(nt);
+  save(nd);
+  setTimeout(()=>openTab(phaseId, nt.id), 200);
+}
+function deleteTask(phaseId, taskId) {
+  closeTab(taskId);
+  const nd = JSON.parse(JSON.stringify(DATA));
+  const p = nd.phases.find(p=>p.id===phaseId);
+  if (!p) return;
+  p.tasks = p.tasks.filter(t=>t.id!==taskId);
+  save(nd);
+}
+function toggleDone(phaseId, taskId) {
+  const task = getTask(phaseId, taskId);
+  if (!task) return;
+  updateTask(phaseId, taskId, {status: task.status==='done'?'todo':'done'});
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+function isWeekOverdue(w) {
+  const t=new Date(); t.setHours(0,0,0,0);
+  return new Date(w.friFull) < t;
+}
+function isWeekCurrent(w) {
+  const t=new Date(); t.setHours(0,0,0,0);
+  return t>=new Date(w.monFull) && t<=new Date(w.friFull);
+}
+function reportEmpty(weekId) {
+  const r=DATA.reports?.[weekId];
+  return !r||(!r.notatki?.trim()&&!r.wnioski?.trim()&&!r.pytania?.trim());
+}
+function getMissingReports() {
+  const m=[];
+  for(const mo of ALL_MONTHS) for(const w of mo.weeks) if(isWeekOverdue(w)&&reportEmpty(w.id)) m.push(w);
+  return m;
+}
+
+function renderReports() {
+  const cont = document.getElementById('tab-reports');
+  const missing = getMissingReports();
+  let html = '';
+
+  if (missing.length>0) {
+    html += `<div class="report-alert">
+      <span style="font-size:22px">🔴</span>
+      <div><div style="color:#e05555;font-weight:600;font-size:14px">Brakujące raporty: ${missing.length}</div>
+      <div style="color:var(--text2);font-size:12px;margin-top:3px">${missing.slice(0,3).map(w=>w.label).join(' · ')}${missing.length>3?` · +${missing.length-3} więcej`:''}</div></div>
+    </div>`;
+  }
+
+  ALL_MONTHS.forEach(month => {
+    const mmissing = month.weeks.filter(w=>isWeekOverdue(w)&&reportEmpty(w.id)).length;
+    const mdone = month.weeks.filter(w=>isWeekOverdue(w)&&!reportEmpty(w.id)).length;
+    const mtotal = month.weeks.filter(w=>isWeekOverdue(w)).length;
+    const pct = mtotal?Math.round(mdone/mtotal*100):0;
+    const isOpen = month.key === (new Date().getFullYear()*100+new Date().getMonth());
+
+    html += `<div style="margin-bottom:12px;">
+      <button class="month-hdr ${isOpen?'open':''}" id="mhdr-${month.key}" onclick="toggleMonth(${month.key})">
+        <span style="font-size:14px;color:var(--gold);transition:transform .2s;display:inline-block;transform:${isOpen?'rotate(90deg)':'rotate(0deg)'}" id="marr-${month.key}">▶</span>
+        <span class="month-title">${month.label}</span>
+        ${mmissing>0?`<span class="month-miss">⚠ ${mmissing} brakujących</span>`:''}
+        ${mtotal>0?`<span style="font-size:11px;color:var(--text3)">${mdone}/${mtotal} złożonych</span>`:''}
+        <div class="month-prog"><div class="month-prog-fill" style="width:${pct}%"></div></div>
+      </button>
+      <div id="mweeks-${month.key}" style="display:${isOpen?'block':'none'}">
+        <div class="weeks-container">`;
+
+    month.weeks.forEach((week,wi) => {
+      const isCur = isWeekCurrent(week);
+      const isOvd = isWeekOverdue(week);
+      const isEmpty = reportEmpty(week.id);
+      const isMiss = isOvd && isEmpty;
+      const isExp = weekSubTabs[week.id] !== undefined;
+      const subTab = weekSubTabs[week.id]?.tab || 'notatki';
+      const report = DATA.reports?.[week.id] || {};
+
+      let statusColor = 'var(--text3)', statusLabel = 'Przyszły', rowBg = 'transparent';
+      if (isCur) { statusColor='var(--gold)'; statusLabel='Bieżący'; rowBg='rgba(201,168,76,.04)'; }
+      else if (isMiss) { statusColor='#e05555'; statusLabel='⚠ Złóż raport!'; rowBg='rgba(200,60,60,.04)'; }
+      else if (isOvd&&!isEmpty) { statusColor='var(--green)'; statusLabel='✓ Złożony'; rowBg='rgba(90,138,96,.03)'; }
+
+      html += `<div class="week-row" style="background:${rowBg}">
+        <button class="week-hdr" onclick="toggleWeek('${week.id}')">
+          <span style="font-size:12px;color:var(--border2);display:inline-block;transform:${isExp?'rotate(90deg)':'rotate(0deg)'}">▶</span>
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:${isCur||isMiss?600:400};color:${isMiss?'#e05555':isCur?'var(--text)':'var(--text2)'}">${week.label}</span>
+            <span style="font-size:11px;margin-left:10px;color:var(--text3)">Termin: piątek ${week.friFull.split('-').reverse().slice(0,2).join('.')}</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:${statusColor};white-space:nowrap">${statusLabel}</span>
+          ${isMiss?'<span style="font-size:16px;animation:pulse 1.5s infinite">🔴</span>':''}
+          ${!isEmpty&&isOvd?'<span style="font-size:14px">✅</span>':''}
+        </button>`;
+
+      if (isExp) {
+        html += `<div class="week-content">
+          ${isMiss?`<div style="margin:8px 20px 0 44px;background:rgba(200,60,60,.1);border:1px solid rgba(200,60,60,.25);border-radius:8px;padding:10px 14px;color:#e05555;font-size:12px;font-weight:500;">🔴 Raport za ten tydzień nie został złożony.</div>`:''}
+          <div class="week-subtabs">
+            ${[['notatki','📝 Notatki'],['wnioski','💡 Wnioski'],['pytania','❓ Pytania'],['pliki','📎 Pliki'],['linki','🔗 Linki']].map(([id,lbl])=>
+              `<button class="week-subtab ${subTab===id?'active':''}" onclick="switchWeekSubtab('${week.id}','${id}')">${lbl}</button>`
+            ).join('')}
+          </div>
+          <div class="week-subtab-body">`;
+
+        if (subTab==='notatki'||subTab==='wnioski'||subTab==='pytania') {
+          html += `<textarea class="report-ta" rows="5" placeholder="${{notatki:'Co się wydarzyło? Postępy, spotkania…',wnioski:'Co działa? Co nie działa? Refleksje…',pytania:'Co wymaga decyzji w kolejnym tygodniu?'}[subTab]}"
+            oninput="updateReport('${week.id}','${subTab}',this.value)">${esc(report[subTab]||'')}</textarea>`;
+        } else if (subTab==='pliki') {
+          const rfiles = report.files || [];
+          html += `<div id="rdrop-${week.id}"
+            ondragover="event.preventDefault();this.style.borderColor='#c9a84c';this.style.background='rgba(201,168,76,.08)'"
+            ondragleave="this.style.borderColor='#3a3830';this.style.background='transparent'"
+            ondrop="event.preventDefault();this.style.borderColor='#3a3830';this.style.background='transparent';handleReportFileDrop(event,'${week.id}')"
+            onclick="document.getElementById('rinp-${week.id}').click()"
+            style="border:1.5px dashed #3a3830;border-radius:8px;padding:14px;text-align:center;cursor:pointer;color:#6b6760;font-size:12px;line-height:1.8;transition:all .2s;margin-bottom:10px;">
+            <input id="rinp-${week.id}" type="file" multiple style="display:none" onchange="handleReportFileInput(this.files,'${week.id}')"/>
+            <div style="font-size:20px;margin-bottom:2px">📎</div>
+            <strong style="color:#a09b8e">Upuść pliki tutaj</strong><br>lub kliknij aby wybrać
+          </div>`;
+          if (rfiles.length > 0) {
+            html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+            rfiles.forEach(f => {
+              html += `<div class="link-item">
+                <span class="link-icon">${fIcon(f.name)}</span>
+                <div style="flex:1;overflow:hidden;">
+                  <a href="${esc(f.url)}" target="_blank" class="link-name">${esc(f.name)}</a>
+                  <div class="link-url">${fSize(f.size)}</div>
+                </div>
+                <a href="${esc(f.url)}" target="_blank" class="link-open">↗</a>
+                <button class="link-del" onclick="deleteReportFile('${week.id}','${f.id}')">×</button>
+              </div>`;
+            });
+            html += `</div>`;
+          } else {
+            html += `<div style="font-size:11px;color:#6b6760;font-style:italic;text-align:center;padding:4px 0;">Brak plików.</div>`;
+          }
+        } else {
+          const links = report.links || [];
+          html += `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">`;
+          links.forEach(l => {
+            html += `<div class="link-item">
+              <span class="link-icon">${linkIcon(l.url)}</span>
+              <div style="flex:1;overflow:hidden;">
+                <a href="${esc(l.url)}" target="_blank" class="link-name">${esc(l.name)}</a>
+                <div class="link-url">${esc(l.url)}</div>
+              </div>
+              <a href="${esc(l.url)}" target="_blank" class="link-open">↗</a>
+              <button class="link-del" onclick="removeReportLink('${week.id}','${l.id}')">×</button>
+            </div>`;
+          });
+          html += `</div>
+          <input id="rlink-url-${week.id}" class="field-inp" style="margin-bottom:6px;font-size:12px;" placeholder="Wklej link (Google Drive…)"/>
+          <input id="rlink-name-${week.id}" class="field-inp" style="margin-bottom:6px;font-size:12px;" placeholder="Nazwa (opcjonalnie)"/>
+          <button class="add-link-btn" onclick="addReportLink('${week.id}')">+ Dodaj link</button>`;
+        }
+
+        html += `</div></div>`;
+        if (!isEmpty) html += `<div style="font-size:11px;color:var(--green);padding:8px 20px 12px 44px;">✓ Raport zapisany.</div>`;
+      }
+
+      html += `</div>`;
+    });
+
+    html += `</div></div></div>`;
+  });
+
+  cont.innerHTML = html;
+}
+
+function toggleMonth(key) {
+  const w = document.getElementById(`mweeks-${key}`);
+  const h = document.getElementById(`mhdr-${key}`);
+  const a = document.getElementById(`marr-${key}`);
+  const open = w.style.display==='none';
+  w.style.display = open?'block':'none';
+  h.classList.toggle('open', open);
+  if(a) a.style.transform = open?'rotate(90deg)':'rotate(0deg)';
+}
+
+function toggleWeek(weekId) {
+  if (weekSubTabs[weekId]) { delete weekSubTabs[weekId]; }
+  else { weekSubTabs[weekId] = {tab:'notatki'}; }
+  renderReports();
+}
+
+function switchWeekSubtab(weekId, tab) {
+  weekSubTabs[weekId] = {tab};
+  renderReports();
+}
+
+function updateReport(weekId, field, value) {
+  const nd = JSON.parse(JSON.stringify(DATA));
+  if (!nd.reports[weekId]) nd.reports[weekId] = {};
+  nd.reports[weekId][field] = value;
+  clearTimeout(saveTimer);
+  DATA = {...nd, _v:(nd._v||0)+1};
+  saveTimer = setTimeout(saveToFirebase, 1000);
+}
+
+function handleReportFileDrop(event, weekId) {
+  Array.from(event.dataTransfer.files).forEach(f => uploadReportFile(f, weekId));
+}
+function handleReportFileInput(fileList, weekId) {
+  Array.from(fileList).forEach(f => uploadReportFile(f, weekId));
+}
+
+async function uploadReportFile(file, weekId) {
+  if (!file) return;
+  const fileId = uid();
+  const path = `reports/${weekId}/${fileId}_${file.name}`;
+  const storageRef = window._storageRef(window._storage, path);
+  const uploadTask = window._uploadBytesResumable(storageRef, file);
+  uploadTask.on('state_changed', null,
+    err => alert('Błąd uploadu: ' + err.message),
+    async () => {
+      const url = await window._getDownloadURL(uploadTask.snapshot.ref);
+      const nd = JSON.parse(JSON.stringify(DATA));
+      if (!nd.reports[weekId]) nd.reports[weekId] = {};
+      if (!nd.reports[weekId].files) nd.reports[weekId].files = [];
+      nd.reports[weekId].files.push({id:fileId, name:file.name, size:file.size, url, path});
+      save(nd);
+    }
+  );
+}
+
+async function deleteReportFile(weekId, fileId) {
+  if (!confirm('Usunąć plik?')) return;
+  const f = DATA.reports?.[weekId]?.files?.find(f=>f.id===fileId);
+  if (f?.path) {
+    try { await window._deleteObject(window._storageRef(window._storage, f.path)); } catch(e) {}
+  }
+  const nd = JSON.parse(JSON.stringify(DATA));
+  if (nd.reports[weekId]?.files) nd.reports[weekId].files = nd.reports[weekId].files.filter(f=>f.id!==fileId);
+  save(nd);
+}
+
+function addReportLink(weekId) {
+  const urlEl = document.getElementById(`rlink-url-${weekId}`);
+  const nameEl = document.getElementById(`rlink-name-${weekId}`);
+  const url = urlEl?.value.trim();
+  if (!url) return;
+  const name = nameEl?.value.trim() || url;
+  const nd = JSON.parse(JSON.stringify(DATA));
+  if (!nd.reports[weekId]) nd.reports[weekId] = {};
+  if (!nd.reports[weekId].links) nd.reports[weekId].links = [];
+  nd.reports[weekId].links.push({id:uid(), url, name});
+  save(nd);
+}
+
+function removeReportLink(weekId, linkId) {
+  const nd = JSON.parse(JSON.stringify(DATA));
+  if (nd.reports[weekId]?.links) nd.reports[weekId].links = nd.reports[weekId].links.filter(l=>l.id!==linkId);
+  save(nd);
+}
+
+// ─── DETAIL OVERLAY ───────────────────────────────────────────────────────────
+let detDebounce = null;
+
+function openDetail(phaseId, taskId) {
+  const task = getTask(phaseId, taskId);
+  if (!task) return;
+  detTaskId = taskId; detPhaseId = phaseId; activeTaskId = taskId;
+  document.getElementById('det-title').value = task.name||'';
+  document.getElementById('det-note').value = task.note||'';
+  document.getElementById('det-start').value = dateToDisplay(task.start||'');
+  document.getElementById('det-end').value = dateToDisplay(task.end||'');
+  document.getElementById('det-owner').value = task.owner||'';
+  const st = document.getElementById('det-status');
+  st.value = task.status||'todo';
+  st.className = 'status-pill s-'+(task.status||'todo');
+  renderLinksPanel(phaseId, taskId);
+  renderXlsPanel();
+  document.getElementById('detail-overlay').classList.add('open');
+  renderTaskBar();
+  if (detMode==='xls') switchMode('xls'); else switchMode('crm');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  detTaskId=null; detPhaseId=null;
+  renderTaskBar(); renderMilestones();
+}
+
+function switchMode(m) {
+  detMode = m;
+  document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',['crm','xls'][i]===m));
+  document.querySelectorAll('.mode-panel').forEach((p,i)=>p.classList.toggle('active',['mode-crm','mode-xls'][i]===p.id));
+  if (m==='xls') renderXlsPanel();
+}
+
+function commitDetDate(field) {
+  const el = document.getElementById('det-'+field);
+  if (!el) return;
+  const val = displayToDate(el.value);
+  detUpdateImmediate(field, val);
+}
+
+function detUpdate(field, value) {
+  if (!detTaskId) return;
+  clearTimeout(detDebounce);
+  detDebounce = setTimeout(()=>updateTask(detPhaseId, detTaskId, {[field]:value}), 600);
+}
+
+function detUpdateImmediate(field, value) {
+  if (!detTaskId) return;
+  clearTimeout(detDebounce);
+  if (field==='status') {
+    document.getElementById('det-status').className = 'status-pill s-'+value;
+  }
+  updateTask(detPhaseId, detTaskId, {[field]:value});
+}
+
+// ─── DATE INPUT HELPER ───────────────────────────────────────────────────────
+// Convert YYYY-MM-DD to DD.MM.YYYY for display
+function dateToDisplay(val) {
+  if (!val) return '';
+  const [y,m,d] = val.split('-');
+  return `${d}.${m}.${y}`;
+}
+// Convert DD.MM.YYYY to YYYY-MM-DD for storage
+function displayToDate(val) {
+  if (!val) return '';
+  const parts = val.replace(/[^0-9]/g,'');
+  if (parts.length < 8) return '';
+  const d = parts.slice(0,2), m = parts.slice(2,4), y = parts.slice(4,8);
+  if (parseInt(d)>31||parseInt(m)>12) return '';
+  return `${y}-${m}-${d}`;
+}
+
+function makeDateInput(value, onchangeFn, styleStr) {
+  const display = dateToDisplay(value);
+  return `<input type="text" 
+    value="${esc(display)}" 
+    placeholder="DD.MM.RRRR"
+    maxlength="10"
+    oninput="formatDateInput(this)"
+    onblur="commitDate(this,'${onchangeFn}')"
+    onkeydown="if(event.key==='Enter')commitDate(this,'${onchangeFn}')"
+    style="${styleStr};font-variant-numeric:tabular-nums;"
+  />`;
+}
+
+function formatDateInput(el) {
+  let v = el.value.replace(/[^0-9]/g,'');
+  if (v.length > 2) v = v.slice(0,2)+'.'+v.slice(2);
+  if (v.length > 5) v = v.slice(0,5)+'.'+v.slice(5);
+  if (v.length > 10) v = v.slice(0,10);
+  el.value = v;
+}
+
+// onchangeFn is a string like "updateTaskDate('phaseId','taskId','start')"
+function commitDate(el, fn) {
+  const dateVal = displayToDate(el.value);
+  if (dateVal || el.value === '') {
+    // Update display color
+    el.style.color = dateVal ? 'var(--green)' : 'var(--text3)';
+    eval(fn.replace('__VAL__', dateVal));
+  }
+}
+
+function updateTaskDate(phaseId, taskId, field, val) {
+  updateTask(phaseId, taskId, {[field]: val});
+}
+function fIcon(name) {
+  const e=(name||'').split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','gif','webp'].includes(e)) return '🖼️';
+  if(['doc','docx'].includes(e)) return '📄';
+  if(['xls','xlsx','csv'].includes(e)) return '📊';
+  if(e==='pdf') return '📕';
+  if(['ppt','pptx'].includes(e)) return '📑';
+  if(['zip','rar','7z'].includes(e)) return '🗜️';
+  return '📎';
+}
+function fSize(b) {
+  if(!b) return '';
+  if(b<1024) return b+' B';
+  if(b<1048576) return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
+}
+
+async function uploadFile(file, phaseId, taskId) {
+  if (!file) return;
+  const fileId = uid();
+  const path = `tasks/${taskId}/${fileId}_${file.name}`;
+  const storageRef = window._storageRef(window._storage, path);
+  const uploadTask = window._uploadBytesResumable(storageRef, file);
+
+  // Show progress in panel
+  renderLinksPanel(phaseId, taskId, {uploading: true, name: file.name, progress: 0});
+
+  uploadTask.on('state_changed',
+    snap => {
+      const pct = Math.round(snap.bytesTransferred/snap.totalBytes*100);
+      renderLinksPanel(phaseId, taskId, {uploading: true, name: file.name, progress: pct});
+    },
+    err => {
+      alert('Błąd uploadu: ' + err.message);
+      renderLinksPanel(phaseId, taskId);
+    },
+    async () => {
+      const url = await window._getDownloadURL(uploadTask.snapshot.ref);
+      const task = getTask(phaseId, taskId);
+      const files = [...(task.files||[]), {id:fileId, name:file.name, size:file.size, url, path}];
+      updateTask(phaseId, taskId, {files});
+      setTimeout(()=>renderLinksPanel(phaseId, taskId), 300);
+    }
+  );
+}
+
+async function deleteFile(fileId, phaseId, taskId) {
+  if (!confirm('Usunąć plik?')) return;
+  const task = getTask(phaseId, taskId);
+  const f = (task.files||[]).find(f=>f.id===fileId);
+  if (f?.path) {
+    try {
+      const storageRef = window._storageRef(window._storage, f.path);
+      await window._deleteObject(storageRef);
+    } catch(e) { console.warn('Delete from storage failed', e); }
+  }
+  updateTask(phaseId, taskId, {files:(task.files||[]).filter(f=>f.id!==fileId)});
+  setTimeout(()=>renderLinksPanel(phaseId, taskId), 300);
+}
+
+let attachTab = {};
+
+function renderLinksPanel(phaseId, taskId, uploadState) {
+  phaseId = phaseId || detPhaseId;
+  taskId = taskId || detTaskId;
+  const task = getTask(phaseId, taskId);
+  if (!task) return;
+  const panel = document.getElementById('crm-links-panel');
+  if (!panel) return;
+
+  const tab = attachTab[taskId] || 'files';
+  const files = task.files || [];
+  const links = task.links || [];
+  const total = files.length + links.length;
+
+  let html = `
+  <span class="field-label">📎 Załączniki ${total?`<span style="color:var(--gold)">(${total})</span>`:''}</span>
+  <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:10px;">
+    <button onclick="switchAttachTab('${taskId}','files')" style="background:none;border:none;border-bottom:2px solid ${tab==='files'?'var(--gold)':'transparent'};padding:7px 12px;cursor:pointer;color:${tab==='files'?'var(--gold)':'var(--text3)'};font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:-1px;">
+      📎 Pliki${files.length?` (${files.length})`:''}
+    </button>
+    <button onclick="switchAttachTab('${taskId}','links')" style="background:none;border:none;border-bottom:2px solid ${tab==='links'?'var(--gold)':'transparent'};padding:7px 12px;cursor:pointer;color:${tab==='links'?'var(--gold)':'var(--text3)'};font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:-1px;">
+      🔗 Linki${links.length?` (${links.length})`:''}
+    </button>
+  </div>`;
+
+  if (tab === 'files') {
+    html += `<div id="upload-drop"
+      ondragover="event.preventDefault();this.style.borderColor='#c9a84c';this.style.background='rgba(201,168,76,.08)'"
+      ondragleave="this.style.borderColor='#3a3830';this.style.background='transparent'"
+      ondrop="event.preventDefault();this.style.borderColor='#3a3830';this.style.background='transparent';handleFileDrop(event)"
+      onclick="document.getElementById('file-upload-inp').click()"
+      style="border:1.5px dashed #3a3830;border-radius:8px;padding:14px;text-align:center;cursor:pointer;color:#6b6760;font-size:12px;line-height:1.8;transition:all .2s;margin-bottom:8px;">
+      <input id="file-upload-inp" type="file" multiple style="display:none" onchange="handleFileInput(this.files)"/>
+      <div style="font-size:20px;margin-bottom:2px">📎</div>
+      <strong style="color:#a09b8e">Upuść pliki tutaj</strong><br>lub kliknij aby wybrać<br>
+      <span style="font-size:10px;opacity:.5">Word · Excel · PDF · Zdjęcia</span>
+    </div>`;
+
+    if (uploadState?.uploading) {
+      html += `<div style="background:#222018;border:1px solid #2e2c27;border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:12px;color:#a09b8e;margin-bottom:6px;">⬆ Wysyłam: ${esc(uploadState.name)}</div>
+        <div style="background:#2e2c27;border-radius:4px;height:6px;overflow:hidden;">
+          <div style="background:#c9a84c;height:100%;width:${uploadState.progress}%;transition:width .3s"></div>
+        </div>
+        <div style="font-size:11px;color:#6b6760;margin-top:4px;">${uploadState.progress}%</div>
+      </div>`;
+    }
+
+    if (files.length > 0) {
+      html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+      files.forEach(f => {
+        html += `<div class="link-item">
+          <span class="link-icon">${fIcon(f.name)}</span>
+          <div style="flex:1;overflow:hidden;">
+            <a href="${esc(f.url)}" target="_blank" class="link-name">${esc(f.name)}</a>
+            <div class="link-url">${fSize(f.size)}</div>
+          </div>
+          <a href="${esc(f.url)}" target="_blank" class="link-open" title="Otwórz">↗</a>
+          <button class="link-del" onclick="deleteFile('${f.id}','${phaseId}','${taskId}')" title="Usuń">×</button>
+        </div>`;
+      });
+      html += `</div>`;
+    } else if (!uploadState?.uploading) {
+      html += `<div style="font-size:11px;color:#6b6760;font-style:italic;text-align:center;padding:4px 0;">Brak plików.</div>`;
+    }
+
+  } else {
+    html += `
+    <input id="new-link-url" class="field-inp" style="font-size:12px;margin-bottom:6px;" placeholder="Wklej link (Drive, Dropbox…)"/>
+    <input id="new-link-name" class="field-inp" style="font-size:12px;margin-bottom:6px;" placeholder="Nazwa (opcjonalnie)"/>
+    <button class="add-link-btn" onclick="addLink('${phaseId}','${taskId}')">+ Dodaj link</button>`;
+
+    if (links.length > 0) {
+      html += `<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">`;
+      links.forEach(l => {
+        html += `<div class="link-item">
+          <span class="link-icon">${linkIcon(l.url)}</span>
+          <div style="flex:1;overflow:hidden;">
+            <a href="${esc(l.url)}" target="_blank" class="link-name">${esc(l.name)}</a>
+            <div class="link-url">${esc(l.url)}</div>
+          </div>
+          <a href="${esc(l.url)}" target="_blank" class="link-open">↗</a>
+          <button class="link-del" onclick="removeLink('${l.id}','${phaseId}','${taskId}')">×</button>
+        </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div style="font-size:11px;color:#6b6760;font-style:italic;text-align:center;padding:8px 0;margin-top:8px;">Brak linków.</div>`;
+    }
+  }
+
+  panel.innerHTML = html;
+}
+
+function switchAttachTab(taskId, tab) {
+  attachTab[taskId] = tab;
+  renderLinksPanel();
+}
+
+function linkIcon(url) {
+  if (!url) return '🔗';
+  if (url.includes('drive.google.com')||url.includes('docs.google.com')) return '📁';
+  if (url.includes('dropbox.com')) return '📦';
+  if (url.includes('.pdf')) return '📕';
+  if (url.match(/\.(doc|docx)/)) return '📄';
+  if (url.match(/\.(xls|xlsx)/)) return '📊';
+  return '🔗';
+}
+
+function addLink(phaseId, taskId) {
+  phaseId = phaseId || detPhaseId;
+  taskId = taskId || detTaskId;
+  const url = document.getElementById('new-link-url')?.value.trim();
+  if (!url) return;
+  const name = document.getElementById('new-link-name')?.value.trim() || url;
+  const task = getTask(phaseId, taskId);
+  const links = [...(task.links||[]), {id:uid(), url, name}];
+  updateTask(phaseId, taskId, {links});
+  setTimeout(()=>{ renderLinksPanel(phaseId, taskId); renderMilestones(); }, 300);
+}
+
+function removeLink(linkId, phaseId, taskId) {
+  phaseId = phaseId || detPhaseId;
+  taskId = taskId || detTaskId;
+  const task = getTask(phaseId, taskId);
+  updateTask(phaseId, taskId, {links:(task.links||[]).filter(l=>l.id!==linkId)});
+  setTimeout(()=>{ renderLinksPanel(phaseId, taskId); renderMilestones(); }, 300);
+}
+
+// ─── XLS PANEL ───────────────────────────────────────────────────────────────
+function renderXlsPanel() {
+  const task = getTask(detPhaseId, detTaskId);
+  if (!task) return;
+  const cont = document.getElementById('xls-content');
+
+  if (!task.xlsGrid) {
+    cont.innerHTML = `
+      <div id="xls-drop" onclick="document.getElementById('xls-file-inp').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+        ondragleave="this.style.borderColor='var(--border2)'"
+        ondrop="event.preventDefault();this.style.borderColor='var(--border2)';handleXlsDrop(event.dataTransfer.files[0])"
+        style="border:2px dashed var(--border2);border-radius:12px;padding:40px 60px;text-align:center;cursor:pointer;color:var(--text3);font-size:13px;line-height:1.9;max-width:500px;width:100%;transition:all .2s">
+        <div style="font-size:36px;margin-bottom:8px">📊</div>
+        <strong style="color:var(--text2);font-size:15px">Upuść plik Excel tutaj</strong><br>
+        lub kliknij, aby wybrać<br>
+        <span style="font-size:11px;opacity:.5">.xlsx · .xls · .csv — odwzorowanie 1:1</span>
+        <input id="xls-file-inp" type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsFile(this.files[0])"/>
+      </div>
+      <div style="color:var(--text3);font-size:12px">— lub —</div>
+      <button onclick="createBlankSheet()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 18px;border-radius:7px;cursor:pointer;">📝 Pusty arkusz</button>
+    `;
+    // Load XLSX if needed
+    if (!window.XLSX) {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      document.head.appendChild(s);
+    }
+    return;
+  }
+
+  const xg = task.xlsGrid;
+  const si = xg.activeSheet||0;
+  const grid = xg.grids[si];
+
+  let html = `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;flex-wrap:wrap;width:100%;">
+    ${xg.fileName?`<span style="font-size:12px;color:var(--text2)">📊 <strong>${esc(xg.fileName)}</strong></span>`:''}
+    <label style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;">
+      <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsFile(this.files[0])"/>🔄 Importuj nowy plik
+    </label>
+    <button onclick="addXlsRow()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;">+ Wiersz</button>
+    <button onclick="addXlsCol()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;">+ Kolumna</button>
+    <button onclick="clearXls()" style="background:var(--surface2);border:1px solid var(--border);color:var(--red);font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;margin-left:auto;">🗑 Wyczyść</button>
+  </div>`;
+
+  if (xg.grids.length>1) {
+    html += `<div style="display:flex;border-bottom:1px solid var(--border);width:100%;">`;
+    xg.grids.forEach((g,i)=>{
+      html += `<button onclick="switchXlsSheet(${i})" style="background:none;border:none;border-bottom:${i===si?'2px solid var(--gold)':'2px solid transparent'};padding:6px 14px;cursor:pointer;color:${i===si?'var(--gold)':'var(--text3)'};font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;">${esc(g.name)}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div style="overflow:auto;flex:1;width:100%;"><table style="border-collapse:collapse;font-size:13px;min-width:100%;">
+    <thead><tr>
+      <th style="background:var(--surface2);color:var(--text3);font-size:10px;font-weight:600;padding:4px 8px;border:1px solid var(--border);text-align:center;min-width:36px;position:sticky;top:0;left:0;z-index:3;"></th>
+      ${grid.cols.map(c=>`<th style="background:var(--surface2);color:var(--text3);font-size:10px;font-weight:600;padding:4px 8px;border:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:2;min-width:90px;">${esc(c)}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+    ${grid.rows.map((row,ri)=>`<tr>
+      <td style="background:var(--surface2);color:var(--text3);font-size:10px;padding:3px 6px;text-align:center;border:1px solid var(--border);position:sticky;left:0;z-index:1;">${ri+1}</td>
+      ${row.map((cell,ci)=>`<td style="border:1px solid var(--border);padding:0;">
+        <input value="${esc(cell?.v||'')}" onblur="updateXlsCell(${ri},${ci},this.value)"
+          style="background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:${cell?.fmt?.color||(cell?.t==='n'?'var(--text2)':'var(--text)')};padding:5px 8px;width:100%;min-width:88px;display:block;text-align:${cell?.fmt?.align||(cell?.t==='n'?'right':'left')};font-weight:${cell?.fmt?.bold?700:400};font-style:${cell?.fmt?.italic?'italic':'normal'};background:${cell?.fmt?.bg||'transparent'}"
+          onfocus="this.style.background='rgba(201,168,76,.06)'" onblurCapture="this.style.background='${cell?.fmt?.bg||'transparent'}'"/>
+      </td>`).join('')}
+    </tr>`).join('')}
+    </tbody></table></div>`;
+
+  cont.innerHTML = html;
+}
+
+function handleXlsDrop(file) { handleXlsFile(file); }
+function handleXlsFile(file) {
+  if (!file) return;
+  if (!window.XLSX) {
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=()=>_doImportXls(file);
+    document.head.appendChild(s);
+  } else _doImportXls(file);
+}
+function _doImportXls(file) {
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const XLSX=window.XLSX;
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true,cellNF:true});
+      const grids=wb.SheetNames.map(name=>{
+        const ws=wb.Sheets[name];
+        if(!ws['!ref'])return{name,cols:['A'],rows:[[{v:'',t:'s'}]],fmt:{}};
+        const range=XLSX.utils.decode_range(ws['!ref']);
+        const nR=range.e.r-range.s.r+1,nC=range.e.c-range.s.c+1;
+        const cols=Array.from({length:nC+2},(_,i)=>XLSX.utils.encode_col(range.s.c+i));
+        const rows=[];
+        for(let r=0;r<nR;r++){const row=[];for(let c=0;c<nC+2;c++){if(c<nC){const addr=XLSX.utils.encode_cell({r:range.s.r+r,c:range.s.c+c});const cell=ws[addr];row.push(cell?{v:cell.w!==undefined?cell.w:String(cell.v??''),t:cell.t||'s'}:{v:'',t:'s'});}else row.push({v:'',t:'s'});}rows.push(row);}
+        for(let i=0;i<5;i++)rows.push(Array(nC+2).fill(null).map(()=>({v:'',t:'s'})));
+        return{name,cols,rows,fmt:{}};
+      });
+      updateTask(detPhaseId,detTaskId,{xlsGrid:{grids,activeSheet:0,fileName:file.name}});
+      setTimeout(renderXlsPanel,300);
+    }catch(err){alert('Błąd: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+function createBlankSheet() {
+  const cols=['A','B','C','D','E','F','G','H'];
+  updateTask(detPhaseId,detTaskId,{xlsGrid:{grids:[{name:'Arkusz1',cols,rows:Array(20).fill(null).map(()=>cols.map(()=>({v:'',t:'s'}))),fmt:{}}],activeSheet:0,fileName:null}});
+  setTimeout(renderXlsPanel,300);
+}
+function addXlsRow() {
+  const task=getTask(detPhaseId,detTaskId); if(!task?.xlsGrid)return;
+  const xg=JSON.parse(JSON.stringify(task.xlsGrid));
+  const si=xg.activeSheet||0;
+  xg.grids[si].rows.push(Array(xg.grids[si].cols.length).fill(null).map(()=>({v:'',t:'s'})));
+  updateTask(detPhaseId,detTaskId,{xlsGrid:xg}); setTimeout(renderXlsPanel,300);
+}
+function addXlsCol() {
+  const task=getTask(detPhaseId,detTaskId); if(!task?.xlsGrid)return;
+  const xg=JSON.parse(JSON.stringify(task.xlsGrid));
+  const si=xg.activeSheet||0, g=xg.grids[si];
+  const XLSX=window.XLSX;
+  g.cols.push(XLSX?XLSX.utils.encode_col(g.cols.length):String.fromCharCode(65+g.cols.length%26));
+  g.rows=g.rows.map(r=>[...r,{v:'',t:'s'}]);
+  updateTask(detPhaseId,detTaskId,{xlsGrid:xg}); setTimeout(renderXlsPanel,300);
+}
+function clearXls() {
+  if(!confirm('Wyczyścić arkusz?'))return;
+  updateTask(detPhaseId,detTaskId,{xlsGrid:null}); setTimeout(renderXlsPanel,300);
+}
+function switchXlsSheet(i) {
+  const task=getTask(detPhaseId,detTaskId); if(!task?.xlsGrid)return;
+  updateTask(detPhaseId,detTaskId,{xlsGrid:{...task.xlsGrid,activeSheet:i}}); setTimeout(renderXlsPanel,300);
+}
+function updateXlsCell(ri,ci,val) {
+  const task=getTask(detPhaseId,detTaskId); if(!task?.xlsGrid)return;
+  const xg=JSON.parse(JSON.stringify(task.xlsGrid));
+  const si=xg.activeSheet||0;
+  const isNum=val.trim()!==''&&!isNaN(parseFloat(val.replace(/\s/g,'').replace(',','.')));
+  xg.grids[si].rows[ri][ci]={...xg.grids[si].rows[ri][ci],v:val,t:isNum?'n':'s'};
+  clearTimeout(detDebounce);
+  detDebounce=setTimeout(()=>updateTask(detPhaseId,detTaskId,{xlsGrid:xg}),800);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('firebaseReady', () => {
+  document.getElementById('loading').style.display = 'none';
+  const savedUser = localStorage.getItem('hotel_user_v2');
+  const authed = sessionStorage.getItem('hotel_authed');
+  if (!authed) {
+    showPasswordScreen();
+  } else if (savedUser && USERS[savedUser]) {
+    chooseUser(savedUser);
+  } else {
+    document.getElementById('userpick').style.display = 'flex';
+  }
+});
+
+// Timeout fallback
+setTimeout(()=>{
+  if (!window._firebaseReady) {
+    document.getElementById('loading').querySelector('p').textContent = 'Problem z połączeniem. Odśwież stronę.';
+  }
+}, 10000);
+
+// Close detail on overlay click
+document.getElementById('detail-overlay').addEventListener('click', e => {
+  if (e.target===document.getElementById('detail-overlay')) closeDetail();
+});
+</script>
+
+
+</body></html>
